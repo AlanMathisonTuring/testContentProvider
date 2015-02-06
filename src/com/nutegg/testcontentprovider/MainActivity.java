@@ -1,17 +1,26 @@
 package com.nutegg.testcontentprovider;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlSerializer;
 
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Xml;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nutegg.testcontentprovider.domain.Person;
+import com.nutegg.testcontentprovider.domain.SmsInfo;
 
 public class MainActivity extends Activity {
 	
@@ -64,5 +73,129 @@ public class MainActivity extends Activity {
 		}
 		tv.setText(pInfo);
 	}
+	
+	//备份短信
+			public void saveSms(View view){
+				//假设已经获取到全部的短信
+				//方法2:通过XML序列化器去生成一个XML文件.
+				ContentResolver resolver = getContentResolver();
+				Uri uri = Uri.parse("content://sms/");
+				Cursor cursor = resolver.query(uri,new String[]{"address","date","type","body"}, null, null, null);//查询所以信息
+				List<SmsInfo> smsInfoList = new ArrayList<SmsInfo>();
+				while(cursor.moveToNext()){
+					SmsInfo smsInfo = new SmsInfo();
+					String address = cursor.getString(cursor.getColumnIndex("address"));
+					String date = cursor.getString(cursor.getColumnIndex("date"));
+					String type = cursor.getString(cursor.getColumnIndex("type"));
+
+					String body = cursor.getString(cursor.getColumnIndex("body"));
+					smsInfo.setAddress(address);
+					smsInfo.setContent(body);
+					smsInfo.setDate(Long.parseLong(date));
+					smsInfo.setType(Integer.parseInt(type));
+					smsInfoList.add(smsInfo);
+				}
+				
+				XmlSerializer serializer = Xml.newSerializer();
+				File file = new File(getFilesDir(),"SMSINFO.xml");
+				//File file = new File("/data/data","SMSINFO.xml");
+				try {
+					FileOutputStream fos = new FileOutputStream(file);
+			
+					serializer.setOutput(fos,"utf-8");
+				
+					serializer.startDocument("utf-8", true);
+					serializer.startTag(null, "smss");
+					for(SmsInfo smsInfo : smsInfoList){
+						serializer.startTag(null, "sms");
+						serializer.attribute(null, "id", smsInfo.getId()+"");
+						serializer.startTag(null, "date");
+						serializer.text(smsInfo.getDate()+"");
+						serializer.endTag(null, "date");
+						serializer.startTag(null, "content");
+						serializer.text(smsInfo.getContent());
+						serializer.endTag(null, "content");
+						serializer.startTag(null, "type");
+						serializer.text(smsInfo.getType()+"");
+						serializer.endTag(null, "type");
+						serializer.startTag(null, "adress");
+						serializer.text(smsInfo.getAddress());
+						serializer.endTag(null, "adress");
+						serializer.endTag(null, "sms");
+					}				
+					serializer.endDocument();
+					fos.close();
+
+					Toast.makeText(this, "短信备份成功", Toast.LENGTH_SHORT).show();
+				} catch (Exception e){
+					e.printStackTrace();
+					Toast.makeText(this, "短信备份失败", Toast.LENGTH_SHORT).show();
+				}
+				
+			}
+			
+			//读取短信
+			public void readSms(View view){
+				//假设已经获取到全部的短信
+				//方法2:通过XML序列化器去生成一个XML文件.
+				XmlPullParser parser = Xml.newPullParser();
+				File file = new File(getFilesDir(),"SMSINFO.xml");
+				//File file = new File("/data/data","SMSINFO.xml");
+				try {
+					FileInputStream fis = new FileInputStream(file);
+					parser.setInput(fis,"utf-8");
+					List<SmsInfo> smsInfoList = null;
+					SmsInfo smsInfo = null;
+					int type = parser.getEventType();
+					while(type != XmlPullParser.END_DOCUMENT){
+						switch(type){
+						case XmlPullParser.START_TAG:
+							if("smss".equals(parser.getName())){
+								smsInfoList = new ArrayList<SmsInfo>();
+							}else if("sms".equals(parser.getName())){
+								smsInfo = new SmsInfo();
+								String id = parser.getAttributeValue(0);
+								smsInfo.setId(Integer.parseInt(id));
+							}else if("date".equals(parser.getName())){						
+								String date = parser.nextText();
+								smsInfo.setDate(Long.parseLong(date));
+							}else if("content".equals(parser.getName())){
+								String content = parser.nextText();
+								smsInfo.setContent(content);
+							}else if("type".equals(parser.getName())){
+								String type_ = parser.nextText();
+								smsInfo.setType(Integer.parseInt(type_));
+							}else if("adress".equals(parser.getName())){
+								String adress = parser.nextText();
+								smsInfo.setAddress(adress);
+							}
+							break;
+						case XmlPullParser.END_TAG:
+							if("sms".equals(parser.getName())){						
+								smsInfoList.add(smsInfo);		
+								smsInfo = null;
+							}
+							break;
+						}
+						type = parser.next();
+					}
+					
+					StringBuffer strb= new StringBuffer();
+					
+					for(SmsInfo smsInfos : smsInfoList){
+						String sms = smsInfos.toString();
+						strb.append(sms);
+						strb.append("\n");
+					}
+					TextView textView = (TextView)MainActivity.this.findViewById(R.id.tv);
+
+					textView.setText(strb.toString());
+				
+				} catch (Exception e){
+					e.printStackTrace();
+					Toast.makeText(this, "短信读取失败", Toast.LENGTH_SHORT).show();
+				}
+				
+			}
 
 }

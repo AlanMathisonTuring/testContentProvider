@@ -24,12 +24,30 @@
         android:text="获取SC程序中人员的信息"
         />
     <Button
+        android:id="@+id/bt2"
         android:layout_below="@id/bt1"
         android:layout_centerHorizontal="true"
         android:onClick="getSms"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="获取手机中的短信信息"
+        />
+    <Button
+        android:id="@+id/bt3"
+        android:layout_below="@id/bt2"
+        android:layout_centerHorizontal="true"
+        android:onClick="saveSms"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="备份手机中的短信"
+        />
+    <Button
+        android:layout_below="@id/bt3"
+        android:layout_centerHorizontal="true"
+        android:onClick="readSms"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="读取备份的短信"
         />
 
 </RelativeLayout>
