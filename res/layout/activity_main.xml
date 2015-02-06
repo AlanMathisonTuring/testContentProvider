@@ -16,11 +16,20 @@
         />
     <Button
         android:layout_below="@id/tv"
+        android:id="@+id/bt1"
         android:layout_centerHorizontal="true"
         android:onClick="getOtherAppInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="获取SC程序中人员的信息"
+        />
+    <Button
+        android:layout_below="@id/bt1"
+        android:layout_centerHorizontal="true"
+        android:onClick="getSms"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="获取手机中的短信信息"
         />
 
 </RelativeLayout>

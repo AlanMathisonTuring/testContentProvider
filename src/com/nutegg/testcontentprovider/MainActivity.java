@@ -41,5 +41,28 @@ public class MainActivity extends Activity {
 		}
 		tv.setText(pInfo);
 	}
+	
+	public void getSms(View view) {
+		//通过ContentResolver获得内容提供者
+		ContentResolver resolver = getContentResolver();
+		Uri uri = Uri.parse("content://sms/");
+		Cursor cursor = resolver.query(uri,new String[]{"address","date","type","body"}, null, null, null);//查询所以信息
+		String pInfo = null;
+		String addressType = null;
+		while(cursor.moveToNext()){
+			String address = cursor.getString(cursor.getColumnIndex("address"));
+			String date = cursor.getString(cursor.getColumnIndex("date"));
+			String type = cursor.getString(cursor.getColumnIndex("type"));
+			if("1".equals(type)){
+				addressType ="收件人号码";
+			}else if("2".equals(type)){
+				addressType ="发件人号码";
+			}
+			String body = cursor.getString(cursor.getColumnIndex("body"));
+
+			pInfo = pInfo+"日期:"+date+","+addressType+":"+address+",短信内容"+body+"\n";
+		}
+		tv.setText(pInfo);
+	}
 
 }
