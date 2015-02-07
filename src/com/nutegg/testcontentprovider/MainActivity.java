@@ -11,9 +11,12 @@ import org.xmlpull.v1.XmlSerializer;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Xml;
 import android.view.View;
 import android.widget.TextView;
@@ -30,7 +33,45 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		tv = (TextView)this.findViewById(R.id.tv);
+		ContentResolver resolver = getContentResolver();
+		Uri uri = Uri.parse("content://sms/");
+		resolver.registerContentObserver(uri, true, new MyObserver(new Handler()));
 	}
+	
+	public class MyObserver extends ContentObserver{
+
+		public MyObserver(Handler handler) {
+			super(handler);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public void onChange(boolean selfChange) {
+			// TODO Auto-generated method stub
+			super.onChange(selfChange);
+			Toast.makeText(MainActivity.this, "系统短信内容发生变化!", 1).show();
+			//通过ContentResolver获得内容提供者
+			ContentResolver resolver = getContentResolver();
+			Uri uri = Uri.parse("content://sms/");
+			Cursor cursor = resolver.query(uri,new String[]{"address","date","type","body"}, null, null, null);//查询所以信息
+			String pInfo = null;
+			String addressType = null;
+			cursor.moveToFirst();
+			String address = cursor.getString(cursor.getColumnIndex("address"));
+			String date = cursor.getString(cursor.getColumnIndex("date"));
+			String type = cursor.getString(cursor.getColumnIndex("type"));
+			if("1".equals(type)){
+				addressType ="收件人号码";
+			}else if("2".equals(type)){
+				addressType ="发件人号码";
+			}
+			String body = cursor.getString(cursor.getColumnIndex("body"));
+			
+			
+			pInfo = "日期:"+date+","+addressType+":"+address+",短信内容"+body+"\n";
+			System.out.println(pInfo);
+			}
+		}
 
 	public void getOtherAppInfo(View view) {
 		//通过ContentResolver获得内容提供者
@@ -49,6 +90,18 @@ public class MainActivity extends Activity {
 			pInfo = pInfo+"姓名:"+name+",电话号码:"+number+"\n";
 		}
 		tv.setText(pInfo);
+	}
+	
+	public void addOtherAppInfo(View view) {
+		//通过ContentResolver获得内容提供者
+		ContentResolver resolver = getContentResolver();
+		Uri uri = Uri.parse("content://com.nutegg.personprovider/insert");
+		ContentValues values = new ContentValues();
+		values.put("name", "太多余");
+		values.put("number", "19900990990");
+		values.put("account", 800000000);
+		resolver.insert(uri,values );
+		
 	}
 	
 	public void getSms(View view) {

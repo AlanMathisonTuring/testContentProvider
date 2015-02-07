@@ -9,7 +9,6 @@
     tools:context=".MainActivity" >
 
     <TextView
-        android:layout_centerInParent="true"
         android:id="@+id/tv"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -42,12 +41,22 @@
         android:text="备份手机中的短信"
         />
     <Button
+        android:id="@+id/bt4"
         android:layout_below="@id/bt3"
         android:layout_centerHorizontal="true"
         android:onClick="readSms"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="读取备份的短信"
+        />
+    <Button
+        android:id="@+id/bt5"
+        android:layout_below="@id/bt4"
+        android:layout_centerHorizontal="true"
+        android:onClick="addOtherAppInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="往SC程序数据库插入一条记录"
         />
 
 </RelativeLayout>
